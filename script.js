@@ -27,7 +27,7 @@ function getSectionMotionElements(section) {
   const heading = section.querySelector(".section-heading");
   const index = section.querySelector(".section-index");
   const items = section.querySelectorAll(
-    ".education-list article, .experience-item, .project, .academic-grid article, .skill-table > div, .cert-list article"
+    ".education-list article, .experience-item, .project, .academic-grid article, .services-grid article, .skill-table > div, .cert-list article"
   );
   const rules = section.querySelectorAll(".section-heading > span");
   return { heading, index, items, rules };
@@ -235,7 +235,7 @@ function setupProfileAndSpecialSections() {
 function setupHoverMotion() {
   if (reducedMotion) return;
 
-  document.querySelectorAll(".project, .academic-grid article, .skill-table > div, .cert-list article").forEach((card) => {
+  document.querySelectorAll(".project, .academic-grid article, .services-grid article, .skill-table > div, .cert-list article").forEach((card) => {
     card.addEventListener("mouseenter", () => {
       animate(card, { y: -4 }, { duration: 0.2, ease: "easeOut" });
     });
