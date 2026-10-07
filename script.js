@@ -23,8 +23,49 @@ function run(elements, keyframes, options = {}) {
   });
 }
 
+function getSectionMotionElements(section) {
+  const heading = section.querySelector(".section-heading");
+  const index = section.querySelector(".section-index");
+  const items = section.querySelectorAll(
+    ".education-list article, .experience-item, .project, .academic-grid article, .skill-table > div, .cert-list article"
+  );
+  const rules = section.querySelectorAll(".section-heading > span");
+  return { heading, index, items, rules };
+}
+
+function setHidden(elements) {
+  if (reducedMotion) return;
+  Array.from(elements || []).filter(Boolean).forEach((el) => {
+    el.style.opacity = "0";
+  });
+}
+
+function hideSection(section) {
+  if (reducedMotion) return;
+
+  const { heading, index, items, rules } = getSectionMotionElements(section);
+  const targets = [
+    heading,
+    index,
+    ...Array.from(items),
+    ...Array.from(rules)
+  ].filter(Boolean);
+
+  if (targets.length) {
+    animate(targets, {
+      opacity: 0,
+      y: 18
+    }, {
+      duration: 0.35,
+      ease
+    });
+  }
+}
+
 function revealSection(section) {
   if (reducedMotion) return;
+
+  const { heading, index, items, rules } = getSectionMotionElements(section);
 
   const heading = section.querySelector(".section-heading");
   const index = section.querySelector(".section-index");
@@ -114,14 +155,18 @@ function setupHero() {
 function setupSections() {
   document.querySelectorAll(".section").forEach((section) => {
     if (section.classList.contains("hero")) return;
+    const { heading, index, items, rules } = getSectionMotionElements(section);
+    setHidden([heading, index, ...Array.from(items), ...Array.from(rules)]);
+
     inView(section, () => {
       revealSection(section);
 
-      const rules = section.querySelectorAll(".section-heading > span");
       if (!reducedMotion && rules.length) {
         run(rules, { opacity: [0, 1], x: [-18, 0] }, { duration: 0.5 });
       }
-    }, { once: true, amount: 0.16 });
+
+      return () => hideSection(section);
+    }, { amount: 0.16 });
   });
 }
 
@@ -129,19 +174,29 @@ function setupProfileAndSpecialSections() {
   const profile = document.querySelector("#profile");
   if (profile) {
     const copy = profile.querySelectorAll(".profile-copy > p, .contact-strip");
+    setHidden(copy);
     inView(profile, () => {
       if (copy.length) run(copy, { opacity: [0, 1], y: [22, 0] }, {
         delay: stagger(0.1, { startDelay: 0.25 }),
         duration: 0.55
       });
-    }, { once: true, amount: 0.18 });
+      return () => {
+        if (reducedMotion || !copy.length) return;
+        animate(Array.from(copy), { opacity: 0, y: 18 }, { duration: 0.35, ease });
+      };
+    }, { amount: 0.18 });
   }
 
   const award = document.querySelector(".award");
   if (award) {
+    setHidden([award]);
     inView(award, () => {
       run([award], { opacity: [0, 1], x: [30, 0] }, { duration: 0.7 });
-    }, { once: true, amount: 0.25 });
+      return () => {
+        if (reducedMotion) return;
+        animate(award, { opacity: 0, x: 30 }, { duration: 0.35, ease });
+      };
+    }, { amount: 0.25 });
   }
 
   const contact = document.querySelector(".contact");
@@ -154,15 +209,26 @@ function setupProfileAndSpecialSections() {
       heading.innerHTML = '<span class="contact-line">Let’s connect</span><span class="contact-line"><i>the next system.</i></span>';
     }
 
+    const contactLines = contact.querySelectorAll(".contact-line");
+    setHidden([top, bottom, ...Array.from(contactLines)]);
+
     inView(contact, () => {
       if (reducedMotion) return;
       run([top], { opacity: [0, 1], y: [-12, 0] }, { duration: 0.45 });
-      run(contact.querySelectorAll(".contact-line"), { opacity: [0, 1], y: [42, 0] }, {
+      run(contactLines, { opacity: [0, 1], y: [42, 0] }, {
         delay: stagger(0.12, { startDelay: 0.15 }),
         duration: 0.75
       });
       run([bottom], { opacity: [0, 1], y: [20, 0] }, { delay: 0.45, duration: 0.55 });
-    }, { once: true, amount: 0.2 });
+
+      return () => {
+        if (reducedMotion) return;
+        animate([top, bottom, ...Array.from(contactLines)].filter(Boolean), {
+          opacity: 0,
+          y: 22
+        }, { duration: 0.35, ease });
+      };
+    }, { amount: 0.2 });
   }
 }
 
